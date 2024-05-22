@@ -1,15 +1,17 @@
 import styles from '../styles/styles.module.css'
 import  { CSSProperties, ReactElement, createContext} from 'react'
 import { useProduct } from '../hooks/useProduct'
-import { Product, ProductContextProps, onChangeArgs } from '../interfaces/interfaces';
+import { InitialValues, Product, ProductCardHandlers, ProductContextProps, onChangeArgs } from '../interfaces/interfaces';
 
 export interface Props {
     product : Product;
-    children?: ReactElement | ReactElement[];
+    // children?: ReactElement | ReactElement[];
+    children : ( argumen : ProductCardHandlers) => JSX.Element;
     className?: string;
     style?: CSSProperties;
     onChange?: (args : onChangeArgs) => void;
     value? : number;
+    initialValues?: InitialValues
  }
 
 export const ProductContext =  createContext({} as ProductContextProps);
@@ -21,9 +23,9 @@ interface ProductButtonsProps{
     increaseBy : (value : number) => void;
 }
 
-export const ProductCard = ({children,product,className, style, onChange, value} : Props) => {
+export const ProductCard = ({children,product,className, style, onChange, value, initialValues} : Props) => {
 
-    const {counter, increaseBy} = useProduct({onChange, product, value});
+    const {counter, increaseBy, maxCount, isMaxCounterReached,reset} = useProduct({onChange, product, value, initialValues});
 
   
 
@@ -31,10 +33,18 @@ export const ProductCard = ({children,product,className, style, onChange, value}
     <Provider value={{
         counter,
         increaseBy,
+        maxCount,
         product
     }}>
         <div className={`${styles.productCard} ${className}` } style={style}>
-            {children}
+            {children ({
+                count: counter,
+                isMaxCounterReached,
+                maxCount : initialValues?.maxCount,
+                product,
+                increaseBy,
+                reset
+            })}
             {/* <ProductImage img={product.img}/>
             <PruductTitle title={product.title}/>
             <ProductButtons counter={counter} 
